@@ -7,9 +7,9 @@ const Footer = () => {
                     <a href="#" className="font-medium text-foreground underline-offset-4 hover:underline">
                         Open-Meteo.com
                     </a>
-                    (CC BY 4.0). Location search powered by
+                    (CC BY 4.0). Location data from
                     <a className="font-medium text-foreground underline-offset-4 hover:underline">GeoNames</a>
-                    data via the Open-Meteo Geocoding API.
+                    (CC BY 4.0) via the Open-Meteo Geocoding API and OpenDataSoft.
                 </div>
             </div>
         </footer>

@@ -3,28 +3,52 @@ import WeatherState from "@/components/WeatherState";
 import { getCountry } from "@/lib/countries";
 import { formatRegion } from "@/lib/places";
 import { useWeatherStore } from "@/store/weatherStores";
+import type { WeatherEntry } from "@/types/Area";
+import { useEffect } from "react";
+
+const IDLE_ENTRY: WeatherEntry = { status: "idle", data: null, error: null };
 
 const WeatherGrid = () => {
     const countryCode = useWeatherStore((s) => s.countryCode);
-    const selectedPlace = useWeatherStore((s) => s.selectedPlace);
+    const places = useWeatherStore((s) => s.places);
+    const placesStatus = useWeatherStore((s) => s.placesStatus);
+    const placesError = useWeatherStore((s) => s.placesError);
     const weather = useWeatherStore((s) => s.weather);
+    const loadCountryPlaces = useWeatherStore((s) => s.loadCountryPlaces);
     const retryWeather = useWeatherStore((s) => s.retryWeather);
 
-    if (!selectedPlace) {
-        return <WeatherState countryName={getCountry(countryCode)?.name ?? countryCode} />;
-    }
+    useEffect(() => {
+        // Skipped by the store unless nothing has been requested yet, so StrictMode's re-run is harmless.
+        loadCountryPlaces();
+    }, [loadCountryPlaces]);
+
+    const entries = places.map((place) => weather[place.id] ?? IDLE_ENTRY);
 
     return (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-live="polite">
-            <li>
-                <WeatherCard
-                    name={selectedPlace.name}
-                    subtitle={formatRegion(selectedPlace)}
-                    entry={weather}
-                    onRetry={retryWeather}
-                />
-            </li>
-        </ul>
+        <div className="flex flex-col gap-4">
+            <WeatherState
+                countryName={getCountry(countryCode)?.name ?? countryCode}
+                placeCount={places.length}
+                placesStatus={placesStatus}
+                placesError={placesError}
+                onRetryPlaces={() => loadCountryPlaces({ force: true })}
+                entries={entries}
+            />
+            {places.length > 0 && (
+                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {places.map((place, index) => (
+                        <li key={place.id} >
+                            <WeatherCard
+                                name={place.name}
+                                subtitle={formatRegion(place)}
+                                entry={entries[index]}
+                                onRetry={() => retryWeather(place.id)}
+                            />
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </div>
     );
 };
 

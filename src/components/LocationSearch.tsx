@@ -13,8 +13,7 @@ import { useRef, useState } from "react";
 
 const LocationSearch = () => {
     const countryCode = useWeatherStore((s) => s.countryCode);
-    const selectedPlace = useWeatherStore((s) => s.selectedPlace);
-    const selectPlace = useWeatherStore((s) => s.selectPlace);
+    const addPlace = useWeatherStore((s) => s.addPlace);
     const countryName = getCountry(countryCode)?.name ?? countryCode;
 
     const [query, setQuery] = useState("");
@@ -24,7 +23,7 @@ const LocationSearch = () => {
     const term = query.trim();
 
     const choose = (place: Place) => {
-        selectPlace(place);
+        addPlace(place);
         setQuery("");
         setOpen(false);
     };
@@ -64,11 +63,7 @@ const LocationSearch = () => {
                         setOpen(value.trim().length > 0);
                     }}
                     onFocus={() => setOpen(query.trim().length > 0)}
-                    placeholder={
-                        selectedPlace
-                            ? `Search another place in ${countryName}…`
-                            : `Search a city or governorate in ${countryName}…`
-                    }
+                    placeholder={`Search a city or governorate in ${countryName} to add it…`}
                     className="h-full w-full min-w-0 bg-transparent pr-3 text-sm outline-hidden placeholder:text-muted-foreground"
                 />
             </InputGroup>
