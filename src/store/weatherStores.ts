@@ -1,62 +1,82 @@
 import { DEFAULT_COUNTRY_CODE, getCountry } from "@/lib/countries";
+import { toErrorMessage } from "@/lib/requestErrors";
 import { fetchCurrentWeather } from "@/services/openMeteo";
-import type { Area, WeatherEntry } from "@/types/Area";
+import type { Place, WeatherEntry } from "@/types/Area";
 import { create } from "zustand"
 
 const REQUEST_TIMEOUT_MS = 10_000;
+const IDLE_ENTRY: WeatherEntry = { status: "idle", data: null, error: null };
 
-// Latest request per area id; responses from superseded requests are ignored.
-const activeRequests = new Map<string, AbortController>();
+// Only the latest weather request may update the store; older ones are aborted and ignored.
+let activeWeatherRequest: AbortController | null = null;
 
-function toErrorMessage(error: unknown): string {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-        return "The weather service took too long to respond.";
-    }
-    if (error instanceof TypeError) {
-        return "Couldn't reach the weather service. Check your connection.";
-    }
-    return "Weather data is unavailable right now.";
+function cancelWeatherRequest() {
+    activeWeatherRequest?.abort();
+    activeWeatherRequest = null;
 }
 
 interface WeatherStore {
     countryCode: string;
     setCountry: (code:string)=>void;
-    areaWeather: Record<string, WeatherEntry>;
-    loadAreaWeather: (area: Area, options?: { force?: boolean }) => Promise<void>;
+    selectedPlace: Place | null;
+    weather: WeatherEntry;
+    selectPlace: (place: Place) => void;
+    retryWeather: () => void;
 }
-export const useWeatherStore = create<WeatherStore>()((set, get) => ({
-    countryCode: DEFAULT_COUNTRY_CODE,
-    setCountry: (code) => {
-        if (!getCountry(code) || code === get().countryCode) return;
-        set({
-            countryCode:code.toUpperCase()
-        })
-    },
-    areaWeather: {},
-    loadAreaWeather: async (area, { force = false } = {}) => {
-        const status = get().areaWeather[area.id]?.status;
-        if (!force && (status === "loading" || status === "success")) return;
-
-        activeRequests.get(area.id)?.abort();
+export const useWeatherStore = create<WeatherStore>()((set, get) => {
+    const loadWeather = async (place: Place) => {
+        cancelWeatherRequest();
         const controller = new AbortController();
-        activeRequests.set(area.id, controller);
+        activeWeatherRequest = controller;
 
-        const setEntry = (entry: WeatherEntry) =>
-            set((state) => ({ areaWeather: { ...state.areaWeather, [area.id]: entry } }));
-
-        setEntry({ status: "loading", data: null, error: null });
+        set({ weather: { status: "loading", data: null, error: null } });
         try {
             const data = await fetchCurrentWeather(
-                area,
+                place,
                 AbortSignal.any([controller.signal, AbortSignal.timeout(REQUEST_TIMEOUT_MS)]),
             );
-            if (activeRequests.get(area.id) !== controller) return;
-            setEntry({ status: "success", data, error: null });
+            if (activeWeatherRequest !== controller) return;
+            set({ weather: { status: "success", data, error: null } });
         } catch (error) {
-            if (activeRequests.get(area.id) !== controller) return;
-            setEntry({ status: "error", data: null, error: toErrorMessage(error) });
+            if (activeWeatherRequest !== controller) return;
+            set({
+                weather: {
+                    status: "error",
+                    data: null,
+                    error: toErrorMessage(error, {
+                        service: "weather service",
+                        fallback: "Weather data is unavailable right now.",
+                    }),
+                },
+            });
         } finally {
-            if (activeRequests.get(area.id) === controller) activeRequests.delete(area.id);
+            if (activeWeatherRequest === controller) activeWeatherRequest = null;
         }
-    },
-}));
+    };
+
+    return {
+        countryCode: DEFAULT_COUNTRY_CODE,
+        setCountry: (code) => {
+            const nextCode = code.toUpperCase();
+            if (!getCountry(nextCode) || nextCode === get().countryCode) return;
+            cancelWeatherRequest();
+            set({
+                countryCode: nextCode,
+                selectedPlace: null,
+                weather: IDLE_ENTRY,
+            })
+        },
+        selectedPlace: null,
+        weather: IDLE_ENTRY,
+        selectPlace: (place) => {
+            const { selectedPlace, weather } = get();
+            if (selectedPlace?.id === place.id && weather.status !== "error") return;
+            set({ selectedPlace: place });
+            void loadWeather(place);
+        },
+        retryWeather: () => {
+            const { selectedPlace } = get();
+            if (selectedPlace) void loadWeather(selectedPlace);
+        },
+    };
+});

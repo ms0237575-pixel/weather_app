@@ -1,7 +1,9 @@
-import type { Coordinates, CurrentWeather } from "@/types/Area";
+import type { Coordinates, CurrentWeather, Place } from "@/types/Area";
 import { z } from "zod/mini";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
+const GEOCODING_URL = "https://geocoding-api.open-meteo.com/v1/search";
+const SEARCH_RESULT_COUNT = 10;
 
 const CURRENT_VARIABLES = [
     "temperature_2m",
@@ -25,11 +27,42 @@ const forecastResponseSchema = z.object({
     }),
 });
 
+// Empty fields are omitted, and "results" is missing entirely when nothing matches.
+const geocodingResponseSchema = z.object({
+    results: z.optional(
+        z.array(
+            z.object({
+                id: z.number(),
+                name: z.string(),
+                latitude: z.number(),
+                longitude: z.number(),
+                admin1: z.optional(z.string()),
+                country: z.optional(z.string()),
+            }),
+        ),
+    ),
+});
+
 // Open-Meteo reports invalid requests as HTTP 400 with {"error": true, "reason": "..."}.
 const errorResponseSchema = z.object({
     error: z.literal(true),
     reason: z.string(),
 });
+
+async function getJson(url: string, signal?: AbortSignal): Promise<unknown> {
+    const response = await fetch(url, { signal });
+    const body: unknown = await response.json().catch(() => null);
+
+    if (!response.ok) {
+        const apiError = errorResponseSchema.safeParse(body);
+        throw new Error(
+            apiError.success
+                ? `Open-Meteo error: ${apiError.data.reason}`
+                : `Open-Meteo request failed with HTTP ${response.status}`,
+        );
+    }
+    return body;
+}
 
 export async function fetchCurrentWeather(
     { latitude, longitude }: Coordinates,
@@ -44,19 +77,7 @@ export async function fetchCurrentWeather(
         wind_speed_unit: "kmh",
     });
 
-    const response = await fetch(`${FORECAST_URL}?${params}`, { signal });
-    const body: unknown = await response.json().catch(() => null);
-
-    if (!response.ok) {
-        const apiError = errorResponseSchema.safeParse(body);
-        throw new Error(
-            apiError.success
-                ? `Open-Meteo error: ${apiError.data.reason}`
-                : `Open-Meteo request failed with HTTP ${response.status}`,
-        );
-    }
-
-    const parsed = forecastResponseSchema.safeParse(body);
+    const parsed = forecastResponseSchema.safeParse(await getJson(`${FORECAST_URL}?${params}`, signal));
     if (!parsed.success) {
         throw new Error("Unexpected response from Open-Meteo");
     }
@@ -72,4 +93,32 @@ export async function fetchCurrentWeather(
         weatherCode: current.weather_code,
         isDay: current.is_day === 1,
     };
+}
+
+export async function searchPlaces(
+    query: string,
+    countryCode: string,
+    signal?: AbortSignal,
+): Promise<Place[]> {
+    const params = new URLSearchParams({
+        name: query,
+        count: String(SEARCH_RESULT_COUNT),
+        language: "en",
+        format: "json",
+        countryCode,
+    });
+
+    const parsed = geocodingResponseSchema.safeParse(await getJson(`${GEOCODING_URL}?${params}`, signal));
+    if (!parsed.success) {
+        throw new Error("Unexpected response from Open-Meteo Geocoding");
+    }
+
+    return (parsed.data.results ?? []).map((result) => ({
+        id: String(result.id),
+        name: result.name,
+        latitude: result.latitude,
+        longitude: result.longitude,
+        admin1: result.admin1 || null,
+        country: result.country || null,
+    }));
 }

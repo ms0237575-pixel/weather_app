@@ -20,6 +20,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 
 interface WeatherCardProps {
     name: string;
+    subtitle?: string;
     entry:WeatherEntry;
     onRetry:()=>void
 }
@@ -44,22 +45,20 @@ function formatLocalTime(isoTime: string): string {
   return isoTime.slice(11, 16)
 }
 
-const WeatherCard = ({ name, entry, onRetry }: WeatherCardProps) => {
+const WeatherCard = ({ name, subtitle, entry, onRetry }: WeatherCardProps) => {
   return (
     <Card className="h-full" aria-busy={entry.status === 'idle' || entry.status === 'loading'}>
       <CardHeader>
         <CardTitle className="text-base">{name}</CardTitle>
+        {subtitle && <CardDescription>{subtitle}</CardDescription>}
         {entry.status === 'success' && entry.data && (
-          <>
-            <CardDescription>{getWeatherDescription(entry.data.weatherCode)}</CardDescription>
-            <CardAction>
-              <HugeiconsIcon
-                icon={getWeatherIcon(entry.data.weatherCode, entry.data.isDay)}
-                className="size-8 text-primary"
-                aria-hidden="true"
-              />
-            </CardAction>
-          </>
+          <CardAction>
+            <HugeiconsIcon
+              icon={getWeatherIcon(entry.data.weatherCode, entry.data.isDay)}
+              className="size-8 text-primary"
+              aria-hidden="true"
+            />
+          </CardAction>
         )}
       </CardHeader>
       {entry.status === 'success' && entry.data ? (
@@ -87,6 +86,7 @@ const WeatherDetails = ({ data }: { data: CurrentWeather }) => {
   return (
     <>
       <CardContent className="flex flex-col gap-3">
+        <p className="text-sm font-medium text-foreground">{getWeatherDescription(data.weatherCode)}</p>
         <div className="flex items-baseline gap-2">
           <span className="text-4xl font-semibold tabular-nums text-foreground">{formatValue(data.temperature, '°C')}</span>
           <span className="text-sm text-muted-foreground">Feels like {formatValue(data.apparentTemperature, '°C')}</span>

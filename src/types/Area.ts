@@ -24,3 +24,7 @@ export interface Area extends Coordinates {
     id: string;
     name:string
 }
+export interface Place extends Area {
+    admin1: string | null;
+    country: string | null;
+}
