@@ -9,6 +9,10 @@ export interface CurrentWeather {
     time: string
     timezone: string
     temperature: number | null
+    apparentTemperature: number | null
+    humidity: number | null
+    windSpeed: number | null
+    weatherCode: number | null
     isDay:boolean
 }
 export interface WeatherEntry {
