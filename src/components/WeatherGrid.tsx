@@ -1,7 +1,6 @@
 import WeatherCard from "@/components/WeatherCard";
 import WeatherState from "@/components/WeatherState";
 import { CAIRO_AREAS } from "@/config/cairoAreas";
-import React from "react";
 
 const WeatherGrid = () => {
     return (

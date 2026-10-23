@@ -1,5 +1,4 @@
 import CountrySelector from '@/components/CountrySelector'
-import React from 'react'
 
 const FindLocationBar = () => {
   return (

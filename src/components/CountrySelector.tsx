@@ -6,7 +6,7 @@ import { COUNTRIES, getCountry } from "@/lib/countries";
 import { useWeatherStore } from "@/store/weatherStores";
 import { UnfoldMoreIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import React, { useState } from "react";
+import { useState } from "react";
 
 const CountrySelector = () => {
     const [open, setOpen] = useState(false);
