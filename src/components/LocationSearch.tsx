@@ -48,12 +48,12 @@ const LocationSearch = () => {
                 if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
             }}
         >
-            <span className="text-sm font-medium text-foreground" aria-hidden="true">
+            <span className="text-xs font-medium text-muted-foreground" aria-hidden="true">
                 Location
             </span>
-            <InputGroup className="h-11 rounded-xl bg-card has-[[cmdk-input]:focus-visible]:border-ring has-[[cmdk-input]:focus-visible]:ring-2 has-[[cmdk-input]:focus-visible]:ring-ring/30">
+            <InputGroup className="h-12 rounded-xl border-white/[0.1] bg-white/[0.035] transition-colors hover:bg-white/[0.05] has-[[cmdk-input]:focus-visible]:border-ring has-[[cmdk-input]:focus-visible]:ring-2 has-[[cmdk-input]:focus-visible]:ring-ring/30">
                 <InputGroupAddon>
-                    <HugeiconsIcon icon={SearchIcon} className="size-4" aria-hidden="true" />
+                    <HugeiconsIcon icon={SearchIcon} className="size-4 text-primary" aria-hidden="true" />
                 </InputGroupAddon>
                 <CommandPrimitive.Input
                     ref={inputRef}
@@ -63,14 +63,14 @@ const LocationSearch = () => {
                         setOpen(value.trim().length > 0);
                     }}
                     onFocus={() => setOpen(query.trim().length > 0)}
-                    placeholder={`Search a city or governorate in ${countryName} to add it…`}
-                    className="h-full w-full min-w-0 bg-transparent pr-3 text-sm outline-hidden placeholder:text-muted-foreground"
+                    placeholder={`Search a city or governorate in ${countryName}…`}
+                    className="h-full w-full min-w-0 bg-transparent pr-3 text-sm outline-hidden placeholder:text-muted-foreground/75"
                 />
             </InputGroup>
             {open && (
                 <CommandPrimitive.List
                     label="Matching places"
-                    className="absolute top-full right-0 left-0 z-50 mt-2 max-h-80 overflow-y-auto rounded-xl bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10"
+                    className="absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto rounded-2xl border border-white/[0.1] bg-popover/95 p-1 text-popover-foreground shadow-2xl backdrop-blur-xl"
                     // Keep focus in the input while clicking results, so blur doesn't close the list first.
                     onMouseDown={(e) => e.preventDefault()}
                 >

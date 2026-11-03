@@ -23,10 +23,25 @@ const WeatherState = ({ countryName, placeCount, placesStatus, placesError, onRe
   else if (pending > 0) status = `Loading current weather for ${pending} of ${placeCount} places…`
 
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold text-foreground">{countryName}</h2>
-        <p className="text-sm text-muted-foreground" aria-live="polite">{status}</p>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+        <div className="flex items-center gap-3">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-2xl border border-white/[0.08] bg-white/[0.035] text-primary">
+            <HugeiconsIcon icon={Location01Icon} className="size-5" aria-hidden="true" />
+          </span>
+          <div>
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">{countryName}</h2>
+              {placeCount > 0 && (
+                <span className="rounded-full border border-white/[0.08] bg-white/[0.04] px-2 py-0.5 text-[0.625rem] font-medium text-muted-foreground">
+                  {placeCount} {placeCount === 1 ? 'place' : 'places'}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm" aria-live="polite">{status}</p>
+          </div>
+        </div>
+        <span className="hidden text-[0.65rem] font-medium uppercase tracking-[0.16em] text-muted-foreground/70 sm:block">Weather near you</span>
       </div>
       {placesStatus === 'error' && (
         <Alert variant="destructive">
@@ -64,7 +79,7 @@ const WeatherState = ({ countryName, placeCount, placesStatus, placesError, onRe
       {discovering && placeCount === 0 && (
         <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" aria-hidden="true">
           {Array.from({ length: 3 }, (_, i) => (
-            <li key={i} className="h-40 animate-pulse rounded-lg bg-card ring-1 ring-foreground/10" />
+            <li key={i} className="h-64 animate-pulse rounded-3xl border border-white/[0.06] bg-white/[0.025]" />
           ))}
         </ul>
       )}

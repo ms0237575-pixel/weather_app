@@ -1,75 +1,110 @@
-# React + TypeScript + Vite
+# Weatherly
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Weatherly is a location-aware weather dashboard for keeping an eye on current conditions in the places that matter to you. Its carefully considered interface pairs an obsidian and ivory palette with restrained wine-red accents, editorial typography, and softly layered surfaces for a distinctive, minimalist feel.
 
-Currently, two official plugins are available:
+## Preview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> **Preview image coming soon.** Add a screenshot of the dashboard at `docs/preview.png` and replace this note with:
+> `![Weatherly dashboard preview](./docs/preview.png)`
 
-## React Compiler
+## Features
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Current local weather** — See temperature, feels-like temperature, humidity, wind speed, weather conditions, and local observation time.
+- **Country selection** — Browse and select from supported countries.
+- **Location search** — Find cities within the selected country; results are debounced and can be retried if a request fails.
+- **Useful starting places** — Automatically loads major populated places for the selected country so the dashboard is ready to explore.
+- **Manageable dashboard** — Add a searched location to the top of the list, avoid duplicates, and display up to 12 places at a time.
+- **Responsive, considered UI** — Layouts adapt across phones, tablets, and desktop screens, with keyboard-accessible controls and reduced-motion support.
+- **Weather-specific visuals** — Weather conditions are paired with matching icons and helpful loading and error states.
+- **Efficient rendering** — Zustand selectors keep state subscriptions focused, while memoized weather cards reduce avoidable updates.
+- **No API key required for local development** — Weather and geocoding data are requested from the public services listed below.
 
-## Expanding the ESLint configuration
+## Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+| Area | Technologies |
+| --- | --- |
+| UI | React 19, TypeScript |
+| Styling | Tailwind CSS 4, CSS custom properties, `tw-animate-css` |
+| Build and development | Vite 8 |
+| State management | Zustand |
+| Search controls | `cmdk`, Base UI |
+| Validation | Zod |
+| Icons and typography | Hugeicons, Inter Variable |
+| Linting | ESLint, TypeScript ESLint |
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Data Sources
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+- **Weather forecasts and place search:** [Open-Meteo](https://open-meteo.com/)
+- **Major populated places:** GeoNames data served by [OpenDataSoft](https://www.opendatasoft.com/)
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+Weather and location datasets are credited under **CC BY 4.0**. See the in-app footer for attribution.
 
+## Requirements
+
+- Node.js compatible with the installed Vite version
+- pnpm (available directly or through Corepack)
+
+## Local Setup
+
+1. **Open a terminal in the project directory:**
+
+   ```sh
+   cd path/to/weather-app
+   ```
+
+   If you are using PowerShell with this checkout:
+
+   ```powershell
+   Set-Location C:\Users\LTC\Downloads\weather-app\weather-app
+   ```
+
+2. **Enable pnpm with Corepack, if needed:**
+
+   ```sh
+   corepack enable
+   ```
+
+3. **Install dependencies:**
+
+   ```sh
+   pnpm install
+   ```
+
+4. **Start the development server:**
+
+   ```sh
+   pnpm dev
+   ```
+
+5. **Open the local address** printed in the terminal (Vite defaults to `http://localhost:5173`).
+
+## Project Commands
+
+Run these from the project root:
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start the Vite development server with hot module replacement. |
+| `pnpm build` | Type-check the project and create a production build in `dist/`. |
+| `pnpm preview` | Serve the production build locally for a final check. Run `pnpm build` first. |
+| `pnpm lint` | Run ESLint across the project. |
+
+## Project Structure
+
+```text
+src/
+├── components/       # Application UI and reusable interface components
+│   └── ui/           # Shared primitive components
+├── config/           # Curated location configuration
+├── hooks/            # Location-search hook and request lifecycle
+├── lib/              # Country, place, weather-code, and error helpers
+├── services/         # Open-Meteo and place-discovery API clients
+├── store/            # Zustand weather and location state
+└── types/            # Shared TypeScript types
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+## Notes
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+- No application-specific API key or environment file is required for the current public data services.
+- The app requests live data from external services, so weather and location loading depend on network availability and those services being reachable.
+- The repository provides build and lint scripts; it does not currently define a dedicated automated test script.

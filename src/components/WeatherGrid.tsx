@@ -25,7 +25,7 @@ const WeatherGrid = () => {
     const entries = places.map((place) => weather[place.id] ?? IDLE_ENTRY);
 
     return (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-5">
             <WeatherState
                 countryName={getCountry(countryCode)?.name ?? countryCode}
                 placeCount={places.length}
@@ -35,14 +35,15 @@ const WeatherGrid = () => {
                 entries={entries}
             />
             {places.length > 0 && (
-                <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <ul className="weather-grid grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                     {places.map((place, index) => (
                         <li key={place.id} >
                             <WeatherCard
                                 name={place.name}
                                 subtitle={formatRegion(place)}
                                 entry={entries[index]}
-                                onRetry={() => retryWeather(place.id)}
+                                onRetry={retryWeather}
+                                placeId={place.id}
                             />
                         </li>
                     ))}

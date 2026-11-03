@@ -13,17 +13,16 @@ const CountrySelector = () => {
     const countryCode = useWeatherStore((s) => s.countryCode);
     const setCountry = useWeatherStore((s) => s.setCountry);
     const selected = getCountry(countryCode);
-    console.log(selected);
 
     return (
-        <div className="flex flex-col gap-2 min-w-60">
-            <Label className="text-sm text-foreground" id="country-label" htmlFor="country-trigger">
+        <div className="flex min-w-0 flex-col gap-2 md:w-64 md:shrink-0">
+            <Label className="text-xs font-medium text-muted-foreground" id="country-label" htmlFor="country-trigger">
                 Country
             </Label>
             <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger
                     id="country-trigger"
-                    render={<Button variant={"outline"} className={"h-11 w-full justify-between gap-2 rounded-xl border border-border bg-card hover:bg-secondary text-sm font-medium"} />}>
+                    render={<Button variant="outline" className="h-12 w-full justify-between gap-2 rounded-xl border-white/10 bg-white/[0.035] px-3 text-sm font-medium hover:bg-white/[0.07]" />}>
                     <span className="flex min-w-0 items-center gap-2">
                         {selected ? (
                             <>
@@ -36,7 +35,7 @@ const CountrySelector = () => {
                     </span>
                     <HugeiconsIcon icon={UnfoldMoreIcon}/>
                 </PopoverTrigger>
-                <PopoverContent align="start" className={"min-w-72 p-0"}>
+                <PopoverContent align="start" className="min-w-[min(18rem,calc(100vw-2rem))] border-white/10 bg-popover/95 p-0 shadow-2xl backdrop-blur-xl">
                     <Command>
                         <CommandInput placeholder="Search Countries..." />
                         <CommandList>
