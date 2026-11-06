@@ -10,6 +10,7 @@ Weatherly is a location-aware weather dashboard for keeping an eye on current co
 ## Features
 
 - **Current local weather** — See temperature, feels-like temperature, humidity, wind speed, weather conditions, and local observation time.
+- **Interactive 7-day forecast** — Switch forecast locations, explore daily conditions and precipitation chances, and compare the high/low temperature trend.
 - **Country selection** — Browse and select from supported countries.
 - **Location search** — Find cities within the selected country; results are debounced and can be retried if a request fails.
 - **Useful starting places** — Automatically loads major populated places for the selected country so the dashboard is ready to explore.

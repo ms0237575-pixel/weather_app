@@ -15,6 +15,13 @@ export interface CurrentWeather {
     weatherCode: number | null
     isDay:boolean
 }
+export interface DailyForecastDay {
+    date: string;
+    weatherCode: number | null;
+    temperatureMax: number | null;
+    temperatureMin: number | null;
+    precipitationProbability: number | null;
+}
 export interface WeatherEntry {
     status: AsyncStatus;
     data:CurrentWeather| null;

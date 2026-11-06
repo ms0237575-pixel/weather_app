@@ -1,4 +1,4 @@
-import type { Coordinates, CurrentWeather, Place } from "@/types/Area";
+import type { Coordinates, CurrentWeather, DailyForecastDay, Place } from "@/types/Area";
 import { z } from "zod/mini";
 
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
@@ -13,6 +13,12 @@ const CURRENT_VARIABLES = [
     "weather_code",
     "is_day",
 ] as const;
+const DAILY_VARIABLES = [
+    "weather_code",
+    "temperature_2m_max",
+    "temperature_2m_min",
+    "precipitation_probability_max",
+] as const;
 
 const forecastResponseSchema = z.object({
     timezone: z.string(),
@@ -24,6 +30,16 @@ const forecastResponseSchema = z.object({
         wind_speed_10m: z.nullable(z.number()),
         weather_code: z.nullable(z.number()),
         is_day: z.nullable(z.number()),
+    }),
+});
+
+const dailyForecastResponseSchema = z.object({
+    daily: z.object({
+        time: z.array(z.string()),
+        weather_code: z.array(z.nullable(z.number())),
+        temperature_2m_max: z.array(z.nullable(z.number())),
+        temperature_2m_min: z.array(z.nullable(z.number())),
+        precipitation_probability_max: z.array(z.nullable(z.number())),
     }),
 });
 
@@ -93,6 +109,50 @@ export async function fetchCurrentWeather(
         weatherCode: current.weather_code,
         isDay: current.is_day === 1,
     };
+}
+
+export async function fetchDailyForecast(
+    { latitude, longitude }: Coordinates,
+    signal?: AbortSignal,
+): Promise<DailyForecastDay[]> {
+    const params = new URLSearchParams({
+        latitude: String(latitude),
+        longitude: String(longitude),
+        daily: DAILY_VARIABLES.join(","),
+        forecast_days: "7",
+        timezone: "auto",
+        temperature_unit: "celsius",
+    });
+
+    const parsed = dailyForecastResponseSchema.safeParse(await getJson(`${FORECAST_URL}?${params}`, signal));
+    if (!parsed.success) {
+        throw new Error("Unexpected daily forecast response from Open-Meteo");
+    }
+
+    const {
+        time,
+        weather_code: weatherCodes,
+        temperature_2m_max: temperaturesMax,
+        temperature_2m_min: temperaturesMin,
+        precipitation_probability_max: precipitationProbabilities,
+    } = parsed.data.daily;
+    const days = [
+        weatherCodes.length,
+        temperaturesMax.length,
+        temperaturesMin.length,
+        precipitationProbabilities.length,
+    ];
+    if (time.length !== 7 || days.some((length) => length !== time.length)) {
+        throw new Error("Incomplete daily forecast response from Open-Meteo");
+    }
+
+    return time.map((date, index) => ({
+        date,
+        weatherCode: weatherCodes[index],
+        temperatureMax: temperaturesMax[index],
+        temperatureMin: temperaturesMin[index],
+        precipitationProbability: precipitationProbabilities[index],
+    }));
 }
 
 export async function searchPlaces(

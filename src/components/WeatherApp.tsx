@@ -1,5 +1,6 @@
 import FindLocationBar from "@/components/FindLocationBar"
 import WeatherGrid from "@/components/WeatherGrid"
+import WeeklyForecast from "@/components/WeeklyForecast"
 import { SunCloud02Icon } from "@hugeicons/core-free-icons"
 import { HugeiconsIcon } from "@hugeicons/react"
 
@@ -34,6 +35,7 @@ const WeatherApp = () => {
             </div>
             <FindLocationBar />
             <WeatherGrid />
+            <WeeklyForecast />
         </section>
     )
 }
